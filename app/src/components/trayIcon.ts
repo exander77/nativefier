@@ -39,20 +39,33 @@ export function createTrayIcon(
         const counterValue = getCounterValue(title);
         if (counterValue) {
           appIcon.setToolTip(`(${counterValue})  ${options.name}`);
+          // @ts-ignore
+          const nimage = nativeImage.createFromPath(iconPath.replace(/(.*)\/.*(\.png$)/i, '$1/icon-notify-' + Math.min(counterValue, 10) + '$2'));
+          appIcon.setImage(nimage);
         } else {
           appIcon.setToolTip(options.name);
+          const nimage = nativeImage.createFromPath(iconPath);
+          appIcon.setImage(nimage);
         }
       });
     } else {
+      let counterValue = 0;
+
       ipcMain.on('notification', () => {
         if (mainWindow.isFocused()) {
           return;
         }
         appIcon.setToolTip(`•  ${options.name}`);
+        counterValue = Math.min(counterValue + 1, 10);
+        const nimage = nativeImage.createFromPath(iconPath.replace(/(.*)\/.*(\.png$)/i, '$1/icon-notify-' + counterValue + '$2'));
+        appIcon.setImage(nimage);
       });
 
       mainWindow.on('focus', () => {
         appIcon.setToolTip(options.name);
+        counterValue = 0;
+        const nimage = nativeImage.createFromPath(iconPath);
+        appIcon.setImage(nimage);
       });
     }
 
